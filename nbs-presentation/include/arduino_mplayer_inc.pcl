@@ -1,0 +1,170 @@
+#===========================================
+#==== arduino_mplayer_inc.pcl
+#==== include functions:
+#==== 
+#===========================================
+#==== Autor : FB 24.02.2019              
+#===========================================
+
+/* -------------------------------
+ * interface to arduino jumeg_mplayer.ino sketch
+ * -------------------------------
+ * TESTs 
+ * 100,0 init program
+ * 101,0 test from SD card play files 1-3 50ms,100ms,150ms 1Khz 10ms attack/decay
+ * 102,0 test eventcodes 1-15 
+ * -------------------------------
+ * present tone binaural, send eventcode 
+ * 111,0,1,0 t001,code 1
+ * 111,1,2,0 t002,code 2
+ * -------------------------------
+ * present tone left, send eventcode 
+ * 112,0,1,0 t001,code 1
+ * 112,1,2,0 t002,code 2
+ * -------------------------------
+ * present tone right, send eventcode 
+ * 113,0,1,0 t001,code 1
+ * 113,1,2,0 t002,code 2
+ * -------------------------------
+ * set value 
+ * 131,21,vol,0  set volume both
+ * 131,22,vol,0  set volume left
+ * 131,22,vol,0  set volume right
+ * --------------------------------
+ * 131,31,1,0    set serial send code / feedback e.g. eventcode
+ * 131,32,1,0    set serial verbose
+ */
+
+string CMD_PRESENT_BINAURAL = "111";
+string CMD_PRESENT_STD      =    "0"; # @arduino: first wav file in array
+string CMD_PRESENT_DIV      =    "1"; # @arduino: second wave file in array
+#string CMD_TERMINATE        =  ",0";
+string CMD_TERMINATE        =  ",0\r";
+
+string CMD_SET_VALUE        =  "131";
+
+string CMD_SET_VOL_BOTH     = CMD_SET_VALUE + ",21";
+string CMD_SET_VOL_LEFT     = CMD_SET_VALUE + ",22";
+string CMD_SET_VOL_RIGHT    = CMD_SET_VALUE + ",23";
+
+string CMD_SET_SEND_SERIAL_CODE = CMD_SET_VALUE + ",31";
+string CMD_SET_SERIAL_VERBOSE   = CMD_SET_VALUE + ",32";
+
+string CMD_INIT             = "100";
+string CMD_TEST_PLAY_FILES  = "101";
+string CMD_TEST_EVENTCODES  = "102";
+
+
+#-------------------------------------------
+#--- ard_present_std
+#-------------------------------------------
+sub ard_present_std(output_port ard_port,int code)
+    begin
+	  ard_port.send_string(CMD_PRESENT_BINAURAL+","+ CMD_PRESENT_STD+","+string(code)+CMD_TERMINATE);
+	  wait_interval(1);
+    end; 
+
+#-------------------------------------------
+#--- ard_present_div
+#-------------------------------------------
+sub ard_present_div(output_port ard_port,int code)
+    begin
+	  ard_port.send_string(CMD_PRESENT_BINAURAL+","+ CMD_PRESENT_DIV+","+string(code)+CMD_TERMINATE);
+     wait_interval(1);
+    end;
+
+#-------------------------------------------
+#--- ard_set_volume_both
+#-------------------------------------------
+sub ard_set_volume_both(output_port ard_port,int vol)
+    begin
+	  ard_port.send_string(CMD_SET_VOL_BOTH+","+ string(vol)+CMD_TERMINATE);
+     wait_interval(1); 
+   end;
+
+#-------------------------------------------
+#--- ard_set_volume_left
+#-------------------------------------------
+sub ard_set_volume_left(output_port ard_port,int vol)
+    begin
+	  ard_port.send_string(CMD_SET_VOL_LEFT+","+ string(vol)+CMD_TERMINATE);
+     wait_interval(1);
+    end;
+
+#-------------------------------------------
+#--- ard_set_volume_right
+#-------------------------------------------
+sub ard_set_volume_right(output_port ard_port,int vol)
+    begin
+	  ard_port.send_string(CMD_SET_VOL_RIGHT+","+ string(vol)+CMD_TERMINATE);
+     wait_interval(1);
+    end;
+
+
+#-------------------------------------------
+#--- ard_set_send_serial_code
+#-------------------------------------------
+sub ard_set_send_serial_code(output_port ard_port,int status)
+    begin
+	  ard_port.send_string(CMD_SET_SEND_SERIAL_CODE+","+ string(status)+CMD_TERMINATE);
+     wait_interval(1);    
+    end;
+
+#-------------------------------------------
+#--- ard_set_serial_verbose
+#--- prints info to serial port
+#--- !!! do not use with presentation !!!
+#-------------------------------------------
+sub ard_set_serial_verbose(output_port ard_port,int status)
+    begin
+	  ard_port.send_string(CMD_SET_SERIAL_VERBOSE+","+ string(status)+CMD_TERMINATE);
+     wait_interval(1);
+    end;
+
+#-------------------------------------------
+#--- ard_init
+#-------------------------------------------
+sub ard_init(output_port ard_port)
+    begin
+	  ard_port.send_string(CMD_INIT+CMD_TERMINATE);
+     wait_interval(1);
+    end;
+
+#-------------------------------------------
+#--- ard_test_play_files
+#-------------------------------------------
+sub ard_test_play_files(output_port ard_port)
+    begin
+	  ard_port.send_string(CMD_TEST_PLAY_FILES+CMD_TERMINATE);
+     wait_interval(1);
+    end;
+
+#-------------------------------------------
+#--- ard_test_eventcodes
+#-------------------------------------------
+sub ard_test_eventcodes(output_port ard_port)
+    begin
+	  ard_port.send_string(CMD_TEST_EVENTCODES+CMD_TERMINATE);
+     wait_interval(1); 
+   end;
+
+
+#-------------------------------------------
+#--- ard_wait_feedback
+#-------------------------------------------
+sub int ard_wait_for_feedback( input_port port_in, int cnt)
+ begin
+	 int feedback = 0;
+    loop
+     int ok       = 0;
+    until ok > 0
+    begin
+	  if ( port_in.total_count() > cnt+1 ) then
+		 feedback = port_in.last_code();
+		 ok = 1;
+	   end; # if
+	 end ; # loop
+	
+	return feedback;
+	
+end; # wait_for_feetback

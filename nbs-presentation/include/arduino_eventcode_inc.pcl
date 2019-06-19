@@ -1,0 +1,39 @@
+#===========================================
+#==== arduino_eventcode_inc.pcl
+#==== include functions:
+#==== 
+#===========================================
+#==== Autor : FB 24.02.2016                  
+#===========================================
+
+string CMD_SEND_CODE = "111";
+
+#-------------------------------------------
+#--- ard_send_cmd
+# send cmd str to arduino
+#-------------------------------------------
+sub ard_send_cmd(output_port ard_port,string cstr)
+    begin
+	   ard_port.send_string(CMD_SEND_CODE+","+cstr+"\r");
+	   wait_interval(1);
+    end; 
+
+#-------------------------------------------
+#--- ard_send_eventcode
+# send cmd str to arduino
+#-------------------------------------------
+sub ard_present_eventcode(output_port ard_port,int code,int duration)
+    begin
+	  ard_send_cmd( ard_port,string(code)+","+string(duration) );
+   # wait_interval(200);
+    end; 
+
+#-------------------------------------------
+#--- ard_send_eventcode
+# send cmd str to arduino
+#-------------------------------------------
+sub ard_present_eventcode_test(output_port ard_port,int code,int duration)
+    begin
+	  ard_port.send_code(code);
+   # wait_interval(200);
+    end; 
